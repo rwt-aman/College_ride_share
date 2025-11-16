@@ -1,6 +1,3 @@
-// ==========================
-// ⭐ REQUIRED IMPORTS
-// ==========================
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
@@ -8,9 +5,6 @@ const bcrypt = require("bcrypt");
 
 const app = express();
 
-// ==========================
-// ⭐ CORS (ALLOW NETLIFY FRONTEND)
-// ==========================
 app.use(cors({
   origin: "https://collegerideshare.netlify.app",
   methods: "GET,POST,PUT,DELETE",
@@ -20,9 +14,6 @@ app.use(cors({
 // Middleware
 app.use(express.json());
 
-// ==========================
-// ⭐ POSTGRESQL CONNECTION
-// ==========================
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
@@ -32,9 +23,6 @@ pool.connect()
   .then(() => console.log("✅ PostgreSQL Connected"))
   .catch(err => console.error("❌ DB Connection Error:", err));
 
-// ==========================
-// ⭐ TEST ROUTE
-// ==========================
 app.get("/test-db", async (req, res) => {
   try {
     const result = await pool.query("SELECT NOW()");
@@ -44,9 +32,6 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ REGISTRATION
-// ==========================
 app.post('/register', async (req, res) => {
   try {
     const { studentId, fullName, phoneNumber, email, password } = req.body;
@@ -73,9 +58,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ LOGIN
-// ==========================
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -116,9 +98,6 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ POST RIDE
-// ==========================
 app.post('/post-ride', async (req, res) => {
   try {
     const {
@@ -144,9 +123,7 @@ app.post('/post-ride', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ SEARCH RIDES
-// ==========================
+
 app.get('/search-rides', async (req, res) => {
   const destination = req.query.destination || '';
   const searchDate = req.query.date;
@@ -173,9 +150,6 @@ app.get('/search-rides', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ CONFIRM BOOKING
-// ==========================
 app.post('/confirm-booking', async (req, res) => {
   try {
     const { rideId, seaterName, seaterPhone, seaterStudentId, destination, rideDate, rideTime } = req.body;
@@ -197,9 +171,6 @@ app.post('/confirm-booking', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ RIDER BOOKINGS (UPDATED)
-// ==========================
 app.get('/rider-bookings', async (req, res) => {
   const studentId = req.query.studentId;
   try {
@@ -215,7 +186,7 @@ app.get('/rider-bookings', async (req, res) => {
        ORDER BY b.booking_time DESC`,
       [studentId]
     );
-    // Format the fields so frontend never gets undefined fields
+
     const bookings = result.rows.map(row => ({
       bookingId: row.booking_id,
       seaterName: row.seater_name,
@@ -232,9 +203,7 @@ app.get('/rider-bookings', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ ACCEPT BOOKING
-// ==========================
+
 app.post('/accept-booking', async (req, res) => {
   const client = await pool.connect();
   try {
@@ -279,9 +248,7 @@ app.post('/accept-booking', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ REJECT BOOKING
-// ==========================
+
 app.post('/reject-booking', async (req, res) => {
   try {
     const { bookingId } = req.body;
@@ -301,9 +268,6 @@ app.post('/reject-booking', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ CANCEL BOOKING
-// ==========================
 app.post('/cancel-booking', async (req, res) => {
   const client = await pool.connect();
   try {
@@ -350,9 +314,6 @@ app.post('/cancel-booking', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ SEATER BOOKINGS (UPDATED)
-// ==========================
 app.get('/seater-bookings', async (req, res) => {
   const studentId = req.query.studentId;
   try {
@@ -386,9 +347,6 @@ app.get('/seater-bookings', async (req, res) => {
   }
 });
 
-// ==========================
-// ⭐ START SERVER
-// ==========================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
