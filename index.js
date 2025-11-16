@@ -198,16 +198,14 @@ app.post('/confirm-booking', async (req, res) => {
 });
 
 // ==========================
-// ⭐ RIDER BOOKINGS
+// ⭐ RIDER BOOKINGS (UPDATED)
 // ==========================
 app.get('/rider-bookings', async (req, res) => {
   const studentId = req.query.studentId;
-
   try {
     if (!studentId) {
       return res.json({ bookings: [], error: 'Student ID required' });
     }
-
     const result = await pool.query(
       `SELECT b.booking_id, b.seater_name, b.seater_phone, b.destination,
               b.ride_date, b.ride_time, b.booking_time, b.status
@@ -217,8 +215,18 @@ app.get('/rider-bookings', async (req, res) => {
        ORDER BY b.booking_time DESC`,
       [studentId]
     );
-
-    res.json({ bookings: result.rows });
+    // Format the fields so frontend never gets undefined fields
+    const bookings = result.rows.map(row => ({
+      bookingId: row.booking_id,
+      seaterName: row.seater_name,
+      seaterPhone: row.seater_phone,
+      destination: row.destination,
+      rideDate: row.ride_date ? new Date(row.ride_date).toISOString().split('T')[0] : '',
+      rideTime: row.ride_time || '',
+      bookingTime: row.booking_time ? new Date(row.booking_time).toISOString() : '',
+      status: row.status
+    }));
+    res.json({ bookings });
   } catch (err) {
     res.json({ bookings: [], error: err.message });
   }
@@ -343,16 +351,14 @@ app.post('/cancel-booking', async (req, res) => {
 });
 
 // ==========================
-// ⭐ SEATER BOOKINGS
+// ⭐ SEATER BOOKINGS (UPDATED)
 // ==========================
 app.get('/seater-bookings', async (req, res) => {
   const studentId = req.query.studentId;
-
   try {
     if (!studentId) {
       return res.json({ bookings: [], error: 'Student ID required' });
     }
-
     const result = await pool.query(
       `SELECT b.booking_id, r.rider_name, r.phone as rider_phone, b.destination,
               b.ride_date, b.ride_time, b.booking_time, b.status, r.source
@@ -362,8 +368,19 @@ app.get('/seater-bookings', async (req, res) => {
        ORDER BY b.booking_time DESC`,
       [studentId]
     );
-
-    res.json({ bookings: result.rows });
+    // Proper field mapping
+    const bookings = result.rows.map(row => ({
+      bookingId: row.booking_id,
+      riderName: row.rider_name,
+      riderPhone: row.rider_phone,
+      destination: row.destination,
+      rideDate: row.ride_date ? new Date(row.ride_date).toISOString().split('T')[0] : '',
+      rideTime: row.ride_time || '',
+      bookingTime: row.booking_time ? new Date(row.booking_time).toISOString() : '',
+      status: row.status,
+      source: row.source
+    }));
+    res.json({ bookings });
   } catch (err) {
     res.json({ bookings: [], error: err.message });
   }
@@ -376,3 +393,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
